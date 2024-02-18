@@ -1,30 +1,39 @@
-use console::Term;
-
 mod dict;
+mod term;
 
-fn main() {
-    let word = dict::random_word();
-    println!("type: {}", word);
+fn main() -> ! {
+    let mut all_words = dict::random_words(2).join(" ");
 
-    let mut chars = word.chars().peekable();
+    let mut term = term::new().expect("valid term");
+    let mut written = String::new();
+    let mut current_pos = 0;
+    let mut miss_char: Option<char> = None;
 
-    let term = Term::stdout();
     loop {
-        match term.read_key() {
-            Ok(key) => match key {
-                console::Key::Char(c) => {
-                    if chars.peek().is_none() {
-                        return;
-                    }
+        term.clear();
+        term.write_target(&all_words);
+        term.write_user_input(written.as_str());
+        if let Some(pc) = miss_char {
+            term.write_user_miss(format!("miss: {}", pc).as_str());
+            miss_char = None;
+        }
+        // term.move_cursor_to(written.len(), 1);
 
-                    if &c == chars.peek().unwrap() {
-                        let c = chars.next().unwrap();
-                        println!("{}", c)
-                    }
+        let input_char = term.get_input_char();
+
+        let pos_char = all_words.chars().nth(current_pos);
+        if let Some(cur_target_char) = pos_char {
+            if input_char == cur_target_char {
+                current_pos += 1;
+
+                if written.len() == all_words.len() {
+                    all_words = dict::random_words(1).join(" ");
+                    current_pos = 0;
+                    written.clear();
                 }
-                _ => todo!(),
-            },
-            Err(err) => panic!("{err}"),
-        };
+            } else {
+                miss_char = Some(input_char);
+            }
+        }
     }
 }
