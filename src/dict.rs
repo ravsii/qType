@@ -7,7 +7,6 @@ fn words() -> Vec<String> {
     let words: OnceCell<Vec<String>> = OnceCell::new();
     words
         .get_or_init(|| {
-            println!("init");
             EN_WORDS
                 .lines()
                 .map(str::to_string)
@@ -24,8 +23,5 @@ pub fn random_words(n: usize) -> Vec<String> {
 }
 
 pub fn random_word() -> String {
-    words()
-        .choose(&mut rand::thread_rng())
-        .expect("random word")
-        .to_string()
+    random_words(1).get(0).expect("random word").to_owned()
 }

@@ -25,6 +25,7 @@ fn main() -> ! {
         if let Some(cur_target_char) = pos_char {
             if input_char == cur_target_char {
                 current_pos += 1;
+                written.push(input_char);
 
                 if written.len() == all_words.len() {
                     all_words = dict::random_words(1).join(" ");
