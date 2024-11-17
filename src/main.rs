@@ -1,10 +1,15 @@
-mod dictionary;
-mod typer;
+use std::io;
 
-fn main() {
-    let mut dict = dictionary::new();
+mod typer;
+mod words;
+
+fn main() -> Result<(), io::Error> {
+    let mut dict = words::new();
     dict.load_dict_file("./dict/en.txt").expect("dict loaded");
 
-    let mut term = typer::new(dict);
-    term.run()
+    let mut typer = typer::Typer::new(dict)?;
+    typer.run()?;
+    typer.stop();
+
+    Ok(())
 }
