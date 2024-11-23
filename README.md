@@ -1,9 +1,9 @@
 # **qType**
 
-qType (from _Quick Type_) is a 🚀 _blazingly fast_ 🚀\* terminal-based typing practice tool,
-inspired by [keybr] and [monkeytype]. Typing inside the terminal eliminates the
-overhead of browsers, providing a smoother, more focused experience without the
-disruptions of Web-UI freezes.
+qType (from _Quick Type_) is a 🚀 _blazingly fast_ 🚀\* terminal-based typing
+practice tool, inspired by [keybr] and [monkeytype]. Typing inside the terminal
+eliminates the overhead of browsers, providing a smoother, more focused
+experience without the disruptions of Web-UI freezes.
 
 Currently, qType is my **Rust-learning project**, but who knows—maybe one day
 it will evolve into something much more.
@@ -16,7 +16,9 @@ phrase is a must-include as a meme._
 
 ## Installation
 
-WIP
+```sh
+cargo install qtype
+```
 
 ## **Why qType?**
 
