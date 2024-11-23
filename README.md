@@ -1,11 +1,11 @@
-# **Typer**
+# **qType**
 
-Typer is a 🚀 _blazingly fast_ 🚀\* terminal-based typing practice tool,
+qType (from _Quick Type_) is a 🚀 _blazingly fast_ 🚀\* terminal-based typing practice tool,
 inspired by [keybr] and [monkeytype]. Typing inside the terminal eliminates the
 overhead of browsers, providing a smoother, more focused experience without the
 disruptions of Web-UI freezes.
 
-Currently, Typer is my **Rust-learning project**, but who knows—maybe one day
+Currently, qType is my **Rust-learning project**, but who knows—maybe one day
 it will evolve into something much more.
 
 [keybr]: https://www.keybr.com/
@@ -14,11 +14,15 @@ it will evolve into something much more.
 _\* It's not really "blazingly fast", but since it's a Rust project, this
 phrase is a must-include as a meme._
 
-## **Why Typer?**
+## Installation
+
+WIP
+
+## **Why qType?**
 
 - **Minimalist Interface**: A distraction-free environment tailored for
   terminal enthusiasts.
-- **Performance**: Leveraging Rust's speed, Typer delivers a seamless
+- **Performance**: Leveraging Rust's speed, qType delivers a seamless
   experience with low resource usage.
 - **Focus on Typing**: No browser, no fluff — just pure typing practice.
 

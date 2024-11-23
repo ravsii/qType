@@ -1,7 +1,16 @@
 [package]
-name = "typer"
+name = "qtype"
+description = "Terminal-based typing speed practice app"
+authors = ["ravsii"]
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
+homepage = "https://github.com/ravsii/typer"
+respository = "https://github.com/ravsii/typer"
+license = "MIT"
+license-file = "LICENSE"
+keywords = ["keybr", "monkeytype", "typing", "practice"]
+exclude = ["/img"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

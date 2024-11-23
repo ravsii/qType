@@ -441,6 +441,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "qtype"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "crossterm",
+ "itertools",
+ "rand",
+ "ratatui",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -625,17 +636,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "typer"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "crossterm",
- "itertools",
- "rand",
- "ratatui",
 ]
 
 [[package]]
