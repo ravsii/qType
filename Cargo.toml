@@ -2,11 +2,11 @@
 name = "qtype"
 description = "Terminal-based typing speed practice app"
 authors = ["ravsii"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 readme = "README.md"
-homepage = "https://github.com/ravsii/typer"
-respository = "https://github.com/ravsii/typer"
+homepage = "https://github.com/ravsii/qType"
+respository = "https://github.com/ravsii/qType"
 license = "MIT"
 license-file = "LICENSE"
 keywords = ["keybr", "monkeytype", "typing", "practice"]
