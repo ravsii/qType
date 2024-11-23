@@ -8,11 +8,11 @@ pub struct Dictionary {
     words: Vec<String>,
 }
 
-pub fn new() -> Dictionary {
-    Dictionary { words: vec![] }
-}
-
 impl Dictionary {
+    pub fn new() -> Dictionary {
+        Dictionary { words: vec![] }
+    }
+
     /// load_dict_file accepts path for a text file, where words are
     /// separated by a newline (\n) char.
     pub fn load_dict_file(&mut self, path: &str) -> io::Result<()> {

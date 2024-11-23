@@ -12,58 +12,96 @@ use ratatui::{
     Terminal,
 };
 
-use crate::words;
+use crate::{words, wpm::WpmCounter};
 
-pub struct InputResult {
-    pub c: char,
-    pub typ: InputResultType,
-}
-
-pub enum InputResultType {
-    Miss,
-    Hit,
+enum UserInput {
+    Pass,
+    Miss(char),
+    Hit(char),
 }
 
 pub struct Typer {
     dict: words::Dictionary,
     terminal: Terminal<CrosstermBackend<Stdout>>,
+
+    current_string: String,
+    user_string: Vec<char>,
+    current_pos: i32,
+
+    wpm: WpmCounter,
 }
 
 impl Typer {
     pub fn new(dict: words::Dictionary) -> Result<Self, std::io::Error> {
         let mut terminal = ratatui::init();
         terminal.clear()?;
-        Ok(Self { terminal, dict })
+        let current_string = dict.random_words(5).join(" ");
+        Ok(Self {
+            terminal,
+            dict,
+            current_string,
+            user_string: vec![],
+            wpm: WpmCounter::new(),
+            current_pos: 0,
+        })
     }
 
     pub fn run(&mut self) -> std::io::Result<()> {
-        let words = self.dict.random_words(5);
-        let mut user_str: Vec<char> = vec![];
-        // let mut written = String::new();
-        // let mut current_pos = 0;
-        // let mut miss_char: Option<char> = None;
-        //
-        // loop {
-        //     self.ui.test(words.join(" "));
-        //     self.handle_key().expect("key handled");
-        // }
+        let mut last: UserInput = UserInput::Pass;
+
         loop {
-            let vec_str = words.join(" ");
-            let user_input_joined: String = user_str.iter().collect();
+            if self.current_pos == 1 {
+                self.wpm.start();
+            }
+
+            if let UserInput::Hit(c) = last {
+                self.user_string.push(c);
+                self.current_pos += 1;
+                self.wpm.tick_char(&c);
+            }
+
+            if self.current_pos as usize >= self.current_string.len() {
+                self.randomize_input();
+            }
+
+            let user_input_joined: String = self.user_string.iter().collect();
             self.terminal.draw(|frame| {
                 let layout = Layout::vertical([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
                     Constraint::Length(1),
                     Constraint::Length(1),
                     Constraint::Min(0),
                     Constraint::Length(1),
                 ]);
 
-                let [words, input_area, _, bottom_bar] = layout.areas(frame.area());
+                let [wpm_area, words, input_area, miss_area, _, bottom_bar] =
+                    layout.areas(frame.area());
 
-                let greeting = Paragraph::new(vec_str).white();
-                let input = Paragraph::new(user_input_joined).green();
+                if self.wpm.is_started() {
+                    let current = self.wpm.current_wpm();
+                    let wpm_widget = Paragraph::new(format!(
+                        "{:.1} cpm | {:.1} wpm",
+                        current.chars_per_min, current.words_per_min
+                    ))
+                    .centered()
+                    .gray();
+                    frame.render_widget(wpm_widget, wpm_area);
+                }
+
+                let greeting = Paragraph::new(self.current_string.to_owned())
+                    .centered()
+                    .white();
                 frame.render_widget(greeting, words);
+
+                let input = Paragraph::new(user_input_joined).centered().green();
                 frame.render_widget(input, input_area);
+
+                if let UserInput::Miss(c) = last {
+                    let input = Paragraph::new(c.to_string()).centered().red();
+                    frame.render_widget(input, miss_area);
+                }
+
                 Typer::render_bottom_bar(bottom_bar, frame.buffer_mut());
             })?;
 
@@ -76,57 +114,35 @@ impl Typer {
                     return Ok(());
                 }
 
-                match key.code {
-                    KeyCode::Char(c) => user_str.push(c),
-                    _ => {}
+                if key.modifiers == KeyModifiers::CONTROL && key.code == KeyCode::Char('r') {
+                    self.randomize_input();
+                    last = UserInput::Pass;
+                    continue;
+                }
+
+                if let KeyCode::Char(c) = key.code {
+                    let next_char = self.current_string.chars().nth(self.current_pos as usize);
+                    match next_char {
+                        Some(nc) if nc == c => last = UserInput::Hit(c),
+                        _ => last = UserInput::Miss(c),
+                    };
                 }
             }
         }
+    }
 
-        // loop {
-        //     term.write_user_input(written.as_str());
-        //     if let Some(pc) = miss_char {
-        //         term.write_user_miss(format!("miss: {}", pc).as_str());
-        //         miss_char = None;
-        //     }
-        //     // term.move_cursor_to(written.len(), 1);
-
-        //     let input_char = term.get_input_char();
-
-        //     let pos_char = all_words.chars().nth(current_pos);
-        //     if let Some(cur_target_char) = pos_char {
-        //         if input_char == cur_target_char {
-        //             current_pos += 1;
-        //             written.push(input_char);
-
-        //             if written.len() == all_words.len() {
-        //                 all_words = dict::random_words(1).join(" ");
-        //                 current_pos = 0;
-        //                 written.clear();
-        //             }
-        //         } else {
-        //             miss_char = Some(input_char);
-        //         }
-        //     }
-        // }
+    fn randomize_input(&mut self) {
+        self.current_string = self.dict.random_words(5).join(" ");
+        self.user_string.clear();
+        self.current_pos = 0;
     }
 
     fn render_bottom_bar(area: Rect, buf: &mut Buffer) {
-        let keys = [
-            ("H/←", "Left"),
-            ("L/→", "Right"),
-            ("K/↑", "Up"),
-            ("J/↓", "Down"),
-            ("D/Del", "Destroy"),
-            ("Q/Esc", "Quit"),
-        ];
+        let keys = [("<C-q>", "Quit"), ("<C-r>", "New random words")];
         let spans = keys
             .iter()
-            .flat_map(|(key, desc)| {
-                let key = Span::from(format!(" {key} "));
-                let desc = Span::from(format!(" {desc} "));
-                [key, desc]
-            })
+            .flat_map(|(key, desc)| [Span::from(format!("{key} {desc}")), Span::from(" | ")])
+            .take(keys.len() * 2 - 1)
             .collect_vec();
 
         Line::from(spans).centered().render(area, buf);
@@ -135,54 +151,4 @@ impl Typer {
     pub fn stop(self) {
         ratatui::restore()
     }
-
-    // pub fn handle_key(&mut self) -> io::Result<bool> {
-    //     if let Event::Key(key) = event::read()? {
-    //         if key.kind == event::KeyEventKind::Release {
-    //             return Ok(true);
-    //         }
-    //
-    //         if let KeyCode::Char(c) = key.code {
-    //             self.ui.test(c.to_string())
-    //         }
-    //     }
-    //
-    //     Ok(true)
-    // }
-
-    // pub fn clear(&self) -> io::Result<()> {
-    //     self.t.clear_screen()
-    // }
-
-    // pub fn write_target(&mut self, s: &str) -> io::Result<()> {
-    //     let target_style: console::Style = Style::new().on_cyan().black();
-    //     self.write_style(s, target_style)
-    // }
-
-    // pub fn write_user_input(&mut self, s: &str) -> io::Result<()> {
-    //     let user_style: console::Style = Style::new().green();
-    //     self.write_style(s, user_style)
-    // }
-
-    // pub fn write_user_miss(&mut self, s: &str) -> io::Result<()> {
-    //     let miss_style: console::Style = console::Style::new().red();
-    //     self.write_style(s, miss_style)
-    // }
-
-    // fn write_style(&mut self, s: &str, style: console::Style) -> io::Result<()> {
-    //     self.t.write_fmt(format_args!("{}\n", style.apply_to(s)))
-    // }
-
-    // pub fn get_input_char(&self) -> char {
-    //     loop {
-    //         match self.t.read_key() {
-    //             Ok(key) => {
-    //                 if let Key::Char(c) = key {
-    //                     return c;
-    //                 }
-    //             }
-    //             Err(_) => todo!(),
-    //         };
-    //     }
-    // }
 }
