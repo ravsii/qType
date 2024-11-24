@@ -30,12 +30,17 @@ cargo install qtype
 
 ## **Demo**
 
-![demo gif](./img/demo.gif)
+![demo gif](https://github.com/ravsii/qType/blob/main/img/demo.gif?raw=true)
 
-## **Planned Features**
+## **Features**
 
-- **Smarter Word Randomizer**: Words selected based on usage frequency and
-  typing patterns.
+- **Minimalistic UI**: qType only has features it's actually need.
+- **Multiple Dictionaries**: Dictionaries of 10k words per language (based on
+  usage) of several languages are bundled within the app.
+  - We'll remove them from the binary later and make it lazy-loadable.
+
+### **Planned**
+
 - **Custom Dictionaries**: Support for user-defined dictionaries and additional
   languages.
 - **Accurate WPM/CPM Calculation**: Improved metrics for better accuracy and
