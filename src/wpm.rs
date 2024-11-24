@@ -1,5 +1,6 @@
 use chrono::prelude::*;
 
+#[derive(Clone, Debug)]
 pub struct WpmCounter {
     is_started: bool,
     started_at: DateTime<Local>,
