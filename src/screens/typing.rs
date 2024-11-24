@@ -3,12 +3,16 @@ use ratatui::{prelude::*, widgets::Paragraph};
 
 use crate::{dict::Dictionary, wpm::WpmCounter};
 
+use super::Screen;
+
+#[derive(Clone, Copy, Debug)]
 enum UserInput {
     Pass,
     Miss(char),
     Hit(char),
 }
 
+#[derive(Clone, Debug)]
 pub struct TypingScreen {
     current_string: String,
     user_string: Vec<char>,
@@ -16,12 +20,12 @@ pub struct TypingScreen {
     // last holds user's last input to apply changes on redraw.
     last: UserInput,
 
-    dict: Dictionary,
+    dict: &'static Dictionary,
     wpm: WpmCounter,
 }
 
 impl TypingScreen {
-    pub fn new(dict: Dictionary) -> Self {
+    pub fn new(dict: &'static Dictionary) -> Self {
         Self {
             current_pos: 0,
             current_string: dict.random_words(5).join(" "),
@@ -32,7 +36,15 @@ impl TypingScreen {
         }
     }
 
-    pub fn draw(&mut self, area: Rect, frame: &mut Frame) {
+    fn randomize_input(&mut self) {
+        self.current_string = self.dict.random_words(5).join(" ");
+        self.user_string.clear();
+        self.current_pos = 0;
+    }
+}
+
+impl Screen for TypingScreen {
+    fn render(&mut self, area: Rect, buf: &mut Buffer) {
         if self.current_pos == 1 {
             self.wpm.start();
         }
@@ -54,40 +66,43 @@ impl TypingScreen {
             Constraint::Percentage(25),
         ]);
 
-        let [wpm_area, words, input_area, miss_area] = layout.areas(area);
+        let [wpm_area, words_area, input_area, miss_area] = layout.areas(area);
 
         if self.wpm.is_started() {
             let current = self.wpm.current_wpm();
-            let wpm_widget = Paragraph::new(format!(
+            Paragraph::new(format!(
                 "{:.1} cpm | {:.1} wpm",
                 current.chars_per_min, current.words_per_min
             ))
             .centered()
-            .gray();
-
-            frame.render_widget(wpm_widget, wpm_area);
+            .gray()
+            .render(wpm_area, buf);
         }
 
-        let greeting = Paragraph::new(self.current_string.to_owned())
+        Paragraph::new(self.current_string.to_owned())
             .centered()
-            .white();
-        frame.render_widget(greeting, words);
+            .white()
+            .render(words_area, buf);
 
         let user_str: String = self.user_string.iter().collect();
-        let input = Paragraph::new(user_str).centered().green();
-        frame.render_widget(input, input_area);
+        Paragraph::new(user_str)
+            .centered()
+            .green()
+            .render(input_area, buf);
 
         if let UserInput::Miss(c) = self.last {
-            let input = Paragraph::new(c.to_string()).centered().red();
-            frame.render_widget(input, miss_area);
+            Paragraph::new(c.to_string())
+                .centered()
+                .red()
+                .render(miss_area, buf);
         }
     }
 
-    pub fn handle_key(&mut self, key: KeyEvent) {
+    fn handle_key(&mut self, key: KeyEvent) -> bool {
         if key.modifiers == KeyModifiers::CONTROL && key.code == KeyCode::Char('r') {
             self.randomize_input();
             self.last = UserInput::Pass;
-            return;
+            return false;
         }
 
         if let KeyCode::Char(c) = key.code {
@@ -96,16 +111,12 @@ impl TypingScreen {
                 Some(nc) if nc == c => self.last = UserInput::Hit(c),
                 _ => self.last = UserInput::Miss(c),
             };
-        }
+        };
+
+        false
     }
 
-    fn randomize_input(&mut self) {
-        self.current_string = self.dict.random_words(5).join(" ");
-        self.user_string.clear();
-        self.current_pos = 0;
-    }
-
-    pub fn custom_options() -> Vec<(&'static str, &'static str)> {
-        return vec![("<C-r>", "New random words")];
+    fn custom_options(&self) -> Vec<(&'static str, &'static str)> {
+        vec![("<C-r>", "New random words")]
     }
 }

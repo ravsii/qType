@@ -1,11 +1,23 @@
 use rand::seq::SliceRandom;
 use std::io::{self};
+use strum::EnumIter;
 
+#[derive(Debug, Clone, Copy, EnumIter)]
 pub enum Language {
     English,
     Russian,
 }
 
+impl Language {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Language::English => "English",
+            Language::Russian => "Russian",
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Dictionary {
     words: Vec<String>,
 }

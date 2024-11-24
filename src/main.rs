@@ -12,7 +12,7 @@ fn main() -> Result<(), io::Error> {
     let mut dict = Dictionary::new();
     dict.load(Language::English).expect("dict loaded");
 
-    let mut typer = App::new(dict)?;
+    let mut typer = App::new(Box::leak(Box::new(dict)))?;
     typer.run()?;
     typer.stop();
 
