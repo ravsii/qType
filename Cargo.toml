@@ -10,7 +10,7 @@ respository = "https://github.com/ravsii/qType"
 license = "MIT"
 license-file = "LICENSE"
 keywords = ["keybr", "monkeytype", "typing", "practice"]
-exclude = ["/img", "/dict"]
+exclude = ["/img"]
 
 [dependencies]
 chrono = "0.4.38"
