@@ -1,14 +1,16 @@
+mod app;
+mod dict;
+mod wpm;
+use crate::dict::Dictionary;
+use app::App;
+use dict::Language;
 use std::io;
 
-mod typer;
-mod words;
-mod wpm;
-
 fn main() -> Result<(), io::Error> {
-    let mut dict = words::Dictionary::new();
-    dict.load_dict_file("./dict/en.txt").expect("dict loaded");
+    let mut dict = Dictionary::new();
+    dict.load(Language::English).expect("dict loaded");
 
-    let mut typer = typer::Typer::new(dict)?;
+    let mut typer = App::new(dict)?;
     typer.run()?;
     typer.stop();
 
