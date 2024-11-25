@@ -31,22 +31,7 @@ impl SelectDictScreen {
             state: ListState::default(),
         }
     }
-}
-
-impl Screen for SelectDictScreen {
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let list_items = self
-            .items
-            .iter()
-            .map(|item| ListItem::from(item.as_str()))
-            .collect::<Vec<ListItem>>();
-
-        let list = List::new(list_items).highlight_symbol(">");
-
-        StatefulWidget::render(list, area, buf, &mut self.state);
-    }
-
-    fn handle_key(&mut self, key: KeyEvent) -> bool {
+    pub fn handle_key(&mut self, key: KeyEvent) -> bool {
         match key.code {
             KeyCode::Up => self.state.select_previous(),
             KeyCode::Down => self.state.select_next(),
@@ -59,5 +44,19 @@ impl Screen for SelectDictScreen {
 
     fn custom_options(&self) -> Vec<(&'static str, &'static str)> {
         vec![("Esc", "Back"), ("▲ ▼", "Move"), ("Enter", "Select")]
+    }
+}
+
+impl Widget for &mut SelectDictScreen {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let list_items = self
+            .items
+            .iter()
+            .map(|item| ListItem::from(item.as_str()))
+            .collect::<Vec<ListItem>>();
+
+        let list = List::new(list_items).highlight_symbol(">");
+
+        StatefulWidget::render(list, area, buf, &mut self.state);
     }
 }

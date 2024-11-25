@@ -12,9 +12,13 @@ fn main() -> Result<(), io::Error> {
     let mut dict = Dictionary::new();
     dict.load(Language::English).expect("dict loaded");
 
-    let mut typer = App::new(Box::leak(Box::new(dict)))?;
-    typer.run()?;
-    typer.stop();
+    let mut terminal = ratatui::init();
+    terminal.clear()?;
+
+    let typer = App::new(dict)?;
+    typer.run(terminal)?;
+
+    ratatui::restore();
 
     Ok(())
 }
