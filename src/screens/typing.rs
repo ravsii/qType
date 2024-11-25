@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{prelude::*, widgets::Paragraph};
 
@@ -20,34 +22,40 @@ pub struct TypingScreen {
     // last holds user's last input to apply changes on redraw.
     last: UserInput,
 
-    dict: &'static Dictionary,
+    dict: Rc<RefCell<Dictionary>>,
     wpm: WpmCounter,
 }
 
 impl TypingScreen {
-    pub fn new(dict: &'static Dictionary) -> Self {
+    pub fn new(dict: &Rc<RefCell<Dictionary>>) -> Self {
         Self {
             current_pos: 0,
-            current_string: dict.random_words(5).join(" "),
-            dict,
+            dict: dict.clone(),
+            current_string: dict.borrow().random_words(5).join(" "),
             last: UserInput::Pass,
             user_string: vec![],
             wpm: WpmCounter::new(),
         }
     }
 
-    fn randomize_input(&mut self) {
-        self.current_string = self.dict.random_words(5).join(" ");
-        self.user_string.clear();
-        self.current_pos = 0;
-    }
-}
-
-impl Screen for TypingScreen {
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
+    pub fn handle_key(&mut self, key: KeyEvent) -> bool {
         if self.current_pos == 1 {
             self.wpm.start();
         }
+
+        if key.modifiers == KeyModifiers::CONTROL && key.code == KeyCode::Char('r') {
+            self.randomize_input();
+            self.last = UserInput::Pass;
+            return false;
+        }
+
+        if let KeyCode::Char(c) = key.code {
+            let next_char = self.current_string.chars().nth(self.current_pos as usize);
+            match next_char {
+                Some(nc) if nc == c => self.last = UserInput::Hit(c),
+                _ => self.last = UserInput::Miss(c),
+            };
+        };
 
         if let UserInput::Hit(c) = self.last {
             self.user_string.push(c);
@@ -59,6 +67,22 @@ impl Screen for TypingScreen {
             self.randomize_input();
         }
 
+        false
+    }
+
+    pub fn custom_options(&self) -> Vec<(&'static str, &'static str)> {
+        vec![("<C-r>", "New random words")]
+    }
+
+    fn randomize_input(&mut self) {
+        self.current_string = self.dict.borrow().random_words(5).join(" ");
+        self.user_string.clear();
+        self.current_pos = 0;
+    }
+}
+
+impl Widget for &TypingScreen {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         let layout = Layout::vertical([
             Constraint::Percentage(25),
             Constraint::Percentage(25),
@@ -96,27 +120,5 @@ impl Screen for TypingScreen {
                 .red()
                 .render(miss_area, buf);
         }
-    }
-
-    fn handle_key(&mut self, key: KeyEvent) -> bool {
-        if key.modifiers == KeyModifiers::CONTROL && key.code == KeyCode::Char('r') {
-            self.randomize_input();
-            self.last = UserInput::Pass;
-            return false;
-        }
-
-        if let KeyCode::Char(c) = key.code {
-            let next_char = self.current_string.chars().nth(self.current_pos as usize);
-            match next_char {
-                Some(nc) if nc == c => self.last = UserInput::Hit(c),
-                _ => self.last = UserInput::Miss(c),
-            };
-        };
-
-        false
-    }
-
-    fn custom_options(&self) -> Vec<(&'static str, &'static str)> {
-        vec![("<C-r>", "New random words")]
     }
 }
