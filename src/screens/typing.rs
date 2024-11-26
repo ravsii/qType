@@ -3,9 +3,9 @@ use std::{cell::RefCell, rc::Rc};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{prelude::*, widgets::Paragraph};
 
-use crate::{dict::Dictionary, wpm::WpmCounter};
+use crate::{dict::Dictionary, event::Event, wpm::WpmCounter};
 
-use super::Screen;
+use super::{Opts, Screen};
 
 #[derive(Clone, Copy, Debug)]
 enum UserInput {
@@ -38,15 +38,19 @@ impl TypingScreen {
         }
     }
 
-    pub fn handle_key(&mut self, key: KeyEvent) -> bool {
+    pub fn handle_key(&mut self, key: KeyEvent) -> Event {
         if self.current_pos == 1 {
             self.wpm.start();
+        }
+
+        if key.modifiers == KeyModifiers::CONTROL && key.code == KeyCode::Char('d') {
+            return Event::Switch(Screen::Dicts);
         }
 
         if key.modifiers == KeyModifiers::CONTROL && key.code == KeyCode::Char('r') {
             self.randomize_input();
             self.last = UserInput::Pass;
-            return false;
+            return Event::DoNothing;
         }
 
         if let KeyCode::Char(c) = key.code {
@@ -67,11 +71,7 @@ impl TypingScreen {
             self.randomize_input();
         }
 
-        false
-    }
-
-    pub fn custom_options(&self) -> Vec<(&'static str, &'static str)> {
-        vec![("<C-r>", "New random words")]
+        Event::DoNothing
     }
 
     fn randomize_input(&mut self) {
@@ -120,5 +120,10 @@ impl Widget for &TypingScreen {
                 .red()
                 .render(miss_area, buf);
         }
+    }
+}
+impl Opts for TypingScreen {
+    fn custom_options() -> Vec<(&'static str, &'static str)> {
+        vec![("<C-r>", "New random words"), ("<C-d>", "Select Dict")]
     }
 }

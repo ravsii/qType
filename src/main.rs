@@ -5,6 +5,7 @@ use std::io;
 
 mod app;
 mod dict;
+mod event;
 mod screens;
 mod wpm;
 
@@ -15,7 +16,7 @@ fn main() -> Result<(), io::Error> {
     let mut terminal = ratatui::init();
     terminal.clear()?;
 
-    let typer = App::new(dict)?;
+    let mut typer = App::new(dict)?;
     typer.run(terminal)?;
 
     ratatui::restore();
