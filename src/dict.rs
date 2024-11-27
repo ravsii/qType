@@ -2,9 +2,9 @@ use rand::seq::SliceRandom;
 use std::io::{self};
 use strum::EnumIter;
 
-#[derive(Debug, Clone, Copy, EnumIter)]
+#[derive(Debug, Clone, Copy, EnumIter, Default)]
 pub enum Language {
-    None,
+    #[default]
     English,
     Russian,
 }
@@ -12,7 +12,6 @@ pub enum Language {
 impl Language {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Language::None => "None",
             Language::English => "English",
             Language::Russian => "Russian",
         }
@@ -26,18 +25,20 @@ pub struct Dictionary {
 }
 
 impl Dictionary {
-    pub fn new() -> Self {
-        Dictionary {
-            current: Language::None,
+    pub fn new(lang: Language) -> io::Result<Self> {
+        let mut d = Dictionary {
+            current: lang,
             words: vec![],
-        }
+        };
+
+        d.load(lang)?;
+        Ok(d)
     }
 
     /// load_dict_file accepts path for a text file, where words are
     /// separated by a newline (\n) char.
     pub fn load(&mut self, lang: Language) -> io::Result<()> {
         let dict_raw = match lang {
-            Language::None => "",
             Language::English => include_str!("../dict/en.dict"),
             Language::Russian => include_str!("../dict/ru.dict"),
         };

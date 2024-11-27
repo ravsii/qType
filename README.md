@@ -41,6 +41,8 @@ cargo install qtype
 
 ### **Planned**
 
+- **Difficulties**: Using different samples from dictionaries (based on usage),
+  allowing to practice on the most common words.
 - **Custom Dictionaries**: Support for user-defined dictionaries and additional
   languages.
 - **Accurate WPM/CPM Calculation**: Improved metrics for better accuracy and

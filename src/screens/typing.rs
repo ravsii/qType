@@ -5,7 +5,7 @@ use ratatui::{prelude::*, widgets::Paragraph};
 
 use crate::{dict::Dictionary, event::Event, wpm::WpmCounter};
 
-use super::{Opts, Screen};
+use super::Screen;
 
 #[derive(Clone, Copy, Debug)]
 enum UserInput {
@@ -67,17 +67,22 @@ impl TypingScreen {
             self.wpm.tick_char(&c);
         }
 
-        if self.current_pos as usize >= self.current_string.len() {
+        // we respect utf-8
+        if self.current_pos as usize >= self.current_string.chars().count() {
             self.randomize_input();
         }
 
         Event::DoNothing
     }
 
-    fn randomize_input(&mut self) {
+    pub fn randomize_input(&mut self) {
         self.current_string = self.dict.borrow().random_words(5).join(" ");
         self.user_string.clear();
         self.current_pos = 0;
+    }
+
+    pub fn actions() -> Vec<(&'static str, &'static str)> {
+        vec![("<C-r>", "New random words"), ("<C-d>", "Select Dict")]
     }
 }
 
@@ -120,10 +125,5 @@ impl Widget for &TypingScreen {
                 .red()
                 .render(miss_area, buf);
         }
-    }
-}
-impl Opts for TypingScreen {
-    fn custom_options() -> Vec<(&'static str, &'static str)> {
-        vec![("<C-r>", "New random words"), ("<C-d>", "Select Dict")]
     }
 }

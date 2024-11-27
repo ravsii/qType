@@ -2,7 +2,7 @@
 name = "qtype"
 description = "Terminal-based typing speed practice app"
 authors = ["ravsii"]
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 readme = "README.md"
 homepage = "https://github.com/ravsii/qType"
