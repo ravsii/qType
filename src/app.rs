@@ -1,9 +1,9 @@
 use std::{cell::RefCell, io, rc::Rc};
 
 use crate::{
-    dict::Dictionary,
+    dict::{Dictionary, Language},
     event::Event,
-    screens::{select_dict::SelectDictScreen, typing::TypingScreen, Opts, Screen},
+    screens::{select_dict::SelectDictScreen, typing::TypingScreen, Screen},
 };
 use crossterm::event::{self, KeyCode, KeyEventKind, KeyModifiers};
 use ratatui::{
@@ -14,21 +14,20 @@ use ratatui::{
 };
 
 pub struct App {
-    dict: Rc<RefCell<Dictionary>>,
     screen: Screen,
     typing_screen: TypingScreen,
     select_dict_screen: SelectDictScreen,
 }
 
 impl App {
-    pub fn new(dict: Dictionary) -> Result<Self, std::io::Error> {
+    pub fn new() -> Result<Self, std::io::Error> {
         // TODO: I don't know if this is the right way to do it, but it works for now.
-        let dict = Rc::new(RefCell::new(dict));
+        let dict = Rc::new(RefCell::new(Dictionary::new(Language::English)?));
+
         let typing_screen = TypingScreen::new(&dict);
         let select_dict_screen = SelectDictScreen::new(&dict);
 
         Ok(Self {
-            dict,
             screen: Screen::Typing,
             typing_screen,
             select_dict_screen,
@@ -41,7 +40,13 @@ impl App {
             match self.handle_key()? {
                 Event::DoNothing => continue,
                 Event::Quit => return Ok(()),
-                Event::Switch(_) => todo!(),
+                Event::Switch(to) => {
+                    if to == Screen::Typing {
+                        self.typing_screen.randomize_input();
+                    }
+
+                    self.screen = to
+                }
             }
         }
     }
@@ -54,11 +59,11 @@ impl App {
         match self.screen {
             Screen::Typing => {
                 frame.render_widget(&self.typing_screen, screen_area);
-                bottom_bar_opts.extend(TypingScreen::custom_options());
+                bottom_bar_opts.extend(TypingScreen::actions());
             }
             Screen::Dicts => {
                 frame.render_widget(&mut self.select_dict_screen, screen_area);
-                bottom_bar_opts.extend(SelectDictScreen::custom_options());
+                bottom_bar_opts.extend(SelectDictScreen::actions());
             }
         }
 
@@ -87,7 +92,7 @@ impl App {
 
             match self.screen {
                 Screen::Typing => Ok(self.typing_screen.handle_key(key)),
-                Screen::Dicts => todo!(),
+                Screen::Dicts => Ok(self.select_dict_screen.handle_key(key)),
             }
         } else {
             Ok(Event::DoNothing)
