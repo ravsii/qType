@@ -42,7 +42,7 @@ impl App {
                 Event::Quit => return Ok(()),
                 Event::Switch(to) => {
                     if to == Screen::Typing {
-                        self.typing_screen.randomize_input();
+                        self.typing_screen.reset_input();
                     }
 
                     self.screen = to
@@ -58,7 +58,7 @@ impl App {
         let mut bottom_bar_opts = vec![("<C-q>", "Quit")];
         match self.screen {
             Screen::Typing => {
-                frame.render_widget(&self.typing_screen, screen_area);
+                frame.render_widget(&mut self.typing_screen, screen_area);
                 bottom_bar_opts.extend(TypingScreen::actions());
             }
             Screen::Dicts => {
