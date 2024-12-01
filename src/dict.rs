@@ -1,5 +1,6 @@
+use std::io;
+
 use rand::seq::SliceRandom;
-use std::io::{self};
 use strum::EnumIter;
 
 #[derive(Debug, Clone, Copy, EnumIter, Default)]
@@ -18,7 +19,7 @@ impl Language {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Dictionary {
     current: Language,
     words: Vec<String>,
@@ -55,10 +56,23 @@ impl Dictionary {
         self.current
     }
 
-    pub fn random_words(&self, n: usize) -> Vec<String> {
+    pub fn random_words(&self, batch_size: usize, n: usize) -> Vec<String> {
+        self.random_words_exclude(batch_size, n, &[])
+    }
+
+    pub fn random_words_exclude(
+        &self,
+        batch_size: usize,
+        n: usize,
+        exclude: &[String],
+    ) -> Vec<String> {
         self.words
+            .iter()
+            .take(batch_size)
+            .filter(|item| !exclude.contains(item))
+            .collect::<Vec<&String>>()
             .choose_multiple(&mut rand::thread_rng(), n)
-            .map(|s| s.to_owned())
-            .collect()
+            .map(|v| v.to_owned().to_owned())
+            .collect::<Vec<String>>()
     }
 }
