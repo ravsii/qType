@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/ravsii/qType/compare/v0.1.0...v0.2.0) (2024-12-03)
+
+
+### Features
+
+* difficulty popup ([56ece9f](https://github.com/ravsii/qType/commit/56ece9f023b7fa119c24910ed9ef25e41a7e4cbb))
+
 ## 0.1.0 (2024-11-27)
 
 
