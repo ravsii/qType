@@ -35,7 +35,7 @@ impl Difficulty {
             Difficulty::Easy => "Easy",
             Difficulty::Medium => "Medium",
             Difficulty::Hard => "Hard",
-            Difficulty::VeryHard => "Very hard",
+            Difficulty::VeryHard => "Very Hard",
         }
     }
 }
