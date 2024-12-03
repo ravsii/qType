@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/ravsii/qType/compare/v0.2.0...v0.2.1) (2024-12-03)
+
+
+### Bug Fixes
+
+* **difficulty:** typo ([1e689df](https://github.com/ravsii/qType/commit/1e689df5e5e3363ad6ed9b16848aab5c0d1793b7))
+
 ## [0.2.0](https://github.com/ravsii/qType/compare/v0.1.0...v0.2.0) (2024-12-03)
 
 
